@@ -5,17 +5,17 @@ import model.Subtask;
 import model.Task;
 import type.Type;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class TaskManagerImpl<T extends Task> implements TaskManager<T> {
+public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
-    private Map<Integer, T> taskList;
+    private final HistoryManager<T> historyManager;
+    private final Map<Integer, T> taskList;
 
-    public TaskManagerImpl() {
+    public InMemoryTaskManager() {
         taskList = new HashMap<>();
+        historyManager = Managers.getDefaultHistory();
     }
 
     @Override
@@ -50,7 +50,9 @@ public class TaskManagerImpl<T extends Task> implements TaskManager<T> {
     @Override
     public T getTaskById(int id) {
         if (taskList.containsKey(id)) {
-            return taskList.get(id);
+            T task = taskList.get(id);
+            historyManager.add(task);
+            return task;
         }
 
         System.out.println("Задача с таким идентификатором не найдена.");
@@ -60,6 +62,7 @@ public class TaskManagerImpl<T extends Task> implements TaskManager<T> {
     @Override
     public void updateTask(T task) {
         if (taskList.containsKey(task.getId())) {
+
             if (task instanceof Subtask) {
                 ((Subtask) task).getParent().updateChild((Subtask) task);
             }
@@ -78,9 +81,11 @@ public class TaskManagerImpl<T extends Task> implements TaskManager<T> {
             T task = taskList.get(id);
 
             if (task instanceof Epic && ((Epic) task).getChildren() != null) {
+
                 for (Subtask subtask : ((Epic) task).getChildren()) {
                     removeTaskById(subtask.getId());
                 }
+
             } else if (task instanceof Subtask) {
                 ((Subtask) task).getParent().deleteChild((Subtask) task);
             }
@@ -95,11 +100,17 @@ public class TaskManagerImpl<T extends Task> implements TaskManager<T> {
 
     @Override
     public List<Subtask> getSubtaskByEpicId(int epicId) {
+
         if (taskList.containsKey(epicId) && taskList.get(epicId) instanceof Epic) {
             return ((Epic) taskList.get(epicId)).getChildren();
         }
 
         System.out.println("Задача с таким идентификатором не найдена.");
-        return null;
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Integer> history() {
+        return historyManager.getHistory().stream().map(Task::getId).collect(Collectors.toList());
     }
 }

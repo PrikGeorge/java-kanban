@@ -7,7 +7,7 @@ import utils.Identifier;
 import java.util.Objects;
 
 public class Task {
-    protected int id;
+    private final int id;
 
     protected final String name;
 

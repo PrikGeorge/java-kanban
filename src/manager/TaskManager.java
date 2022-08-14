@@ -28,4 +28,6 @@ public interface TaskManager<T extends Task> {
     // получение всех подзадач эпика по идентификатору
     List<Subtask> getSubtaskByEpicId(int epicId);
 
+    // получение истории просмотров задач
+    List<Integer> history();
 }

@@ -1,12 +1,16 @@
-import manager.TaskManagerImpl;
+import manager.Managers;
+import manager.TaskManager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
 import type.Status;
 
 public class Main {
+
+    private static final TaskManager<Task> inMemoryTaskManager = Managers.getDefault();
+
     public static void main(String[] args) {
-        TaskManagerImpl<Task> taskManagerImpl = new TaskManagerImpl<>();
+
 
         // создаем эпик "магазин"
         Epic epicShop = new Epic("Покупки в магазине", "Пойти в магазин до 18:00 и сделать покупки");
@@ -22,27 +26,49 @@ public class Main {
         Subtask subtaskEndProject = new Subtask("Закончить проект", "Реализовать все классы и методы", Status.NEW, epicWork);
 
         // добавляем задачи в таск менеджер
-        taskManagerImpl.addTask(epicShop);
-        taskManagerImpl.addTask(epicWork);
-        taskManagerImpl.addTask(subtaskBuyMilk);
-        taskManagerImpl.addTask(subtaskBuyBred);
-        taskManagerImpl.addTask(subtaskEndProject);
+        inMemoryTaskManager.addTask(epicShop);
+        inMemoryTaskManager.addTask(epicWork);
+        inMemoryTaskManager.addTask(subtaskBuyMilk);
+        inMemoryTaskManager.addTask(subtaskBuyBred);
+        inMemoryTaskManager.addTask(subtaskEndProject);
+
+        // проверка истории
+        testHistory(epicShop);
+        testHistory(epicWork);
+        testHistory(epicWork);
+        testHistory(epicWork);
+        testHistory(subtaskBuyMilk);
+        testHistory(subtaskBuyBred);
+        testHistory(subtaskEndProject);
+        testHistory(subtaskEndProject);
+        testHistory(subtaskEndProject);
+        testHistory(epicShop);
+        testHistory(subtaskEndProject);
+        testHistory(epicShop);
+        testHistory(epicShop);
+        testHistory(epicShop);
 
         // выводим список всех задач
-        System.out.println(taskManagerImpl.getTaskList());
+        System.out.println(inMemoryTaskManager.getTaskList());
 
         // меняем статус подзадачи эпика "магазин" и далее выводим сам эпик
         subtaskBuyMilk.setStatus(Status.IN_PROGRESS);
         subtaskEndProject.setStatus(Status.DONE);
-        taskManagerImpl.updateTask(subtaskBuyMilk);
-        taskManagerImpl.updateTask(subtaskEndProject);
+        inMemoryTaskManager.updateTask(subtaskBuyMilk);
+        inMemoryTaskManager.updateTask(subtaskEndProject);
 
-        System.out.println(taskManagerImpl.getTaskList());
+        System.out.println(inMemoryTaskManager.getTaskList());
 
         // удаляем одну из задач и эпик
-        taskManagerImpl.removeTaskById(epicWork.getId());
-        taskManagerImpl.removeTaskById(subtaskBuyMilk.getId());
+        inMemoryTaskManager.removeTaskById(epicWork.getId());
+        inMemoryTaskManager.removeTaskById(subtaskBuyMilk.getId());
 
-        System.out.println(taskManagerImpl.getTaskList());
+        System.out.println(inMemoryTaskManager.getTaskList());
+    }
+
+    public static <T extends Task> void testHistory(T task) {
+        System.out.println("Просмотрена задача (id): " + inMemoryTaskManager.getTaskById(task.getId()).getId() + "\n"
+                + inMemoryTaskManager.history());
+
     }
 }

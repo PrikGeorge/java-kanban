@@ -3,10 +3,8 @@ package model;
 import type.Status;
 import type.Type;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Epic extends Task {
     private Map<Integer, Subtask> children = new HashMap<>();
@@ -21,7 +19,7 @@ public class Epic extends Task {
         if (!children.isEmpty()) {
             return new ArrayList<>(children.values());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     public void updateChild(Subtask child) {
@@ -49,28 +47,11 @@ public class Epic extends Task {
         Status newStatus = Status.NEW;
 
         if (children.size() > 0) {
-            boolean isNew = false;
-            boolean isDone = false;
-            boolean isInProgress = false;
+            Map<Status, Long> map = children.values().stream().collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
 
-            for (Subtask task : children.values()) {
-                switch (task.status) {
-                    case NEW:
-                        isNew = true;
-                        break;
-                    case DONE:
-                        isDone = true;
-                        break;
-                    default:
-                        isInProgress = true;
-                }
-            }
-
-            if (isInProgress || (isNew && isDone)) {
-                newStatus = Status.IN_PROGRESS;
-            } else {
-                newStatus = isNew ? Status.NEW : Status.DONE;
-            }
+            newStatus = map.containsKey(Status.IN_PROGRESS) || (map.containsKey(Status.NEW) && map.containsKey(Status.DONE)) ?
+                    Status.IN_PROGRESS : map.containsKey(Status.NEW) ?
+                    Status.NEW : Status.DONE;
         }
 
         this.status = newStatus;
@@ -79,7 +60,7 @@ public class Epic extends Task {
     @Override
     public String toString() {
         return "Epic{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", type='" + Type.getTypeName(type) + '\'' +
