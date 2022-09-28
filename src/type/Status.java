@@ -5,7 +5,6 @@ public enum Status {
     IN_PROGRESS,
     DONE;
 
-
     public static String getStatusName(Status status) {
         String name = "Некорректный статус";
         if (status != null) {

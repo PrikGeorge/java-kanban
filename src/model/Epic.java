@@ -47,7 +47,9 @@ public class Epic extends Task {
         Status newStatus = Status.NEW;
 
         if (children.size() > 0) {
-            Map<Status, Long> map = children.values().stream().collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
+            Map<Status, Long> map = children.values()
+                    .stream()
+                    .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
 
             newStatus = map.containsKey(Status.IN_PROGRESS) || (map.containsKey(Status.NEW) && map.containsKey(Status.DONE)) ?
                     Status.IN_PROGRESS : map.containsKey(Status.NEW) ?
