@@ -5,6 +5,8 @@ import model.Subtask;
 import model.Task;
 import type.Status;
 
+import java.util.Objects;
+
 public class Main {
 
     private static final TaskManager<Task> inMemoryTaskManager = Managers.getDefault();
@@ -35,35 +37,37 @@ public class Main {
         // проверка истории
         testHistory(epicShop);
         testHistory(epicWork);
+        testHistory(subtaskEndProject);
         testHistory(epicWork);
-        testHistory(epicWork);
+        testHistory(subtaskEndProject);
+        testHistory(subtaskEndProject);
         testHistory(subtaskBuyMilk);
         testHistory(subtaskBuyBred);
-        testHistory(subtaskEndProject);
-        testHistory(subtaskEndProject);
-        testHistory(subtaskEndProject);
         testHistory(epicShop);
-        testHistory(subtaskEndProject);
-        testHistory(epicShop);
-        testHistory(epicShop);
-        testHistory(epicShop);
+
+        // удаляем эпик
+        inMemoryTaskManager.removeTaskById(epicWork.getId());
 
         // выводим список всех задач
         System.out.println(inMemoryTaskManager.getTaskList());
 
         // меняем статус подзадачи эпика "магазин" и далее выводим сам эпик
         subtaskBuyMilk.setStatus(Status.IN_PROGRESS);
-        subtaskEndProject.setStatus(Status.DONE);
+        subtaskBuyBred.setStatus(Status.DONE);
         inMemoryTaskManager.updateTask(subtaskBuyMilk);
-        inMemoryTaskManager.updateTask(subtaskEndProject);
+        inMemoryTaskManager.updateTask(subtaskBuyBred);
 
         System.out.println(inMemoryTaskManager.getTaskList());
 
         // удаляем одну из задач и эпик
-        inMemoryTaskManager.removeTaskById(epicWork.getId());
         inMemoryTaskManager.removeTaskById(subtaskBuyMilk.getId());
 
         System.out.println(inMemoryTaskManager.getTaskList());
+
+        // удаляем все задача и смотрим историю
+        inMemoryTaskManager.removeTaskList();
+        System.out.println(inMemoryTaskManager.history());
+
     }
 
     public static <T extends Task> void testHistory(T task) {

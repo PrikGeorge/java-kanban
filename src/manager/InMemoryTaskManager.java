@@ -3,6 +3,7 @@ package manager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
+import type.Status;
 import type.Type;
 
 import java.util.*;
@@ -20,11 +21,14 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
     @Override
     public void addTask(T task) {
+        taskList.put(task.getId(), task);
+
         if (task instanceof Subtask) {
-            ((Subtask) task).getParent().addChild((Subtask) task);
+            Epic epic = (Epic) taskList.get(((Subtask) task).getParent().getId());
+            epic.getSubtasksIds().add(task.getId());
+            updateStatus(task.getId());
         }
 
-        taskList.put(task.getId(), task);
         System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' добавлен(а).");
     }
 
@@ -61,15 +65,12 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
     @Override
     public void updateTask(T task) {
+
         if (taskList.containsKey(task.getId())) {
-
-            if (task instanceof Subtask) {
-                ((Subtask) task).getParent().updateChild((Subtask) task);
-            }
-
             taskList.put(task.getId(), task);
-            System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' обновлен(а).");
+            updateStatus(task.getId());
 
+            System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' обновлен(а).");
         } else {
             System.out.println("Задача с таким идентификатором не найдена.");
         }
@@ -79,18 +80,21 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     public void removeTaskById(int id) {
         if (taskList.containsKey(id)) {
             T task = taskList.get(id);
+            if (task instanceof Epic && Objects.nonNull(((Epic) task).getSubtasksIds())) {
 
-            if (task instanceof Epic && ((Epic) task).getChildren() != null) {
-
-                for (Subtask subtask : ((Epic) task).getChildren()) {
-                    removeTaskById(subtask.getId());
+                List<Integer> subtasksIds = new ArrayList<>(((Epic) task).getSubtasksIds());
+                for (Integer subtaskId : subtasksIds ) {
+                    removeTaskById(subtaskId);
                 }
 
             } else if (task instanceof Subtask) {
-                ((Subtask) task).getParent().deleteChild((Subtask) task);
+                Epic epic = (Epic) taskList.get(((Subtask) task).getParent().getId());
+                epic.getSubtasksIds().remove((Integer) id);
             }
 
             taskList.remove(id);
+            historyManager.remove(id);
+            updateStatus(task.getId());
             System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' удален(а).");
 
         } else {
@@ -102,7 +106,13 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     public List<Subtask> getSubtaskByEpicId(int epicId) {
 
         if (taskList.containsKey(epicId) && taskList.get(epicId) instanceof Epic) {
-            return ((Epic) taskList.get(epicId)).getChildren();
+            List<Subtask> subtasks = new ArrayList<>();
+
+            for (Integer subtaskId : ((Epic) taskList.get(epicId)).getSubtasksIds()) {
+                subtasks.add((Subtask) taskList.get(subtaskId));
+            }
+
+            return subtasks;
         }
 
         System.out.println("Задача с таким идентификатором не найдена.");
@@ -112,5 +122,27 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     @Override
     public List<Integer> history() {
         return historyManager.getHistory().stream().map(Task::getId).collect(Collectors.toList());
+    }
+
+    private void updateStatus(int epicId) {
+        T epic = taskList.get(epicId);
+
+        if (Objects.nonNull(epic)) {
+
+            Status newStatus = Status.NEW;
+            List<Subtask> subtasks = epic instanceof Epic ? getSubtaskByEpicId(epicId) : new ArrayList<Subtask>(epic);
+
+            if (subtasks.size() > 0) {
+                Map<Status, Long> map = subtasks
+                        .stream()
+                        .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
+
+                newStatus = map.containsKey(Status.IN_PROGRESS) || map.containsKey(Status.DONE) ?
+                        Status.IN_PROGRESS : map.containsKey(Status.NEW) ?
+                        Status.NEW : Status.DONE;
+            }
+
+            epic.setStatus(newStatus);
+        }
     }
 }
