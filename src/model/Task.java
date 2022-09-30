@@ -25,9 +25,22 @@ public class Task {
         this.status = status;
         this.type = TaskType.TASK;
     }
+    public Task(int id, String name, String description, TaskStatus status) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.type = TaskType.TASK;
+    }
 
     public Task(String name, String description) {
         id = Identifier.INSTANCE.generate();
+        this.name = name;
+        this.description = description;
+    }
+
+    public Task(int id, String name, String description) {
+        this.id = id;
         this.name = name;
         this.description = description;
     }
@@ -60,8 +73,8 @@ public class Task {
     public String toString() {
         return "Task{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
+                ", name=" + name +
+                ", description=" + description +
                 ", taskType=" + EnumHelper.getTypeName(type) +
                 ", status=" + EnumHelper.getStatusName(status) +
                 '}';

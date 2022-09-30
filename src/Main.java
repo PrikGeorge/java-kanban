@@ -19,14 +19,14 @@ public class Main {
         Epic epicShop = new Epic("Покупки в магазине", "Пойти в магазин до 18:00 и сделать покупки");
 
         /** создаем подзадачи для эпика "магазин" */
-        Subtask subtaskBuyMilk = new Subtask("Купить молоко", "Простоквашино", TaskStatus.NEW, epicShop);
-        Subtask subtaskBuyBred = new Subtask("Купить хлеб", "Нарезной", TaskStatus.NEW, epicShop);
+        Subtask subtaskBuyMilk = new Subtask("Купить молоко", "Простоквашино", TaskStatus.NEW, epicShop.getId());
+        Subtask subtaskBuyBred = new Subtask("Купить хлеб", "Нарезной", TaskStatus.NEW, epicShop.getId());
 
         /** создаем эпик "работа" */
         Epic epicWork = new Epic("Закончить работу пораньше", "Выйти с работы до 19:00");
 
-        /* создаем подзадачи для эпика "работа"*/
-        Subtask subtaskEndProject = new Subtask("Закончить проект", "Реализовать все классы и методы", TaskStatus.NEW, epicWork);
+        /** создаем подзадачи для эпика "работа"*/
+        Subtask subtaskEndProject = new Subtask("Закончить проект", "Реализовать все классы и методы", TaskStatus.NEW, epicWork.getId());
 
         /** добавляем задачи в таск менеджер*/
         inMemoryTaskManager.addTask(epicShop);

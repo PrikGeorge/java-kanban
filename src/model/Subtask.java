@@ -5,27 +5,33 @@ import type.TaskType;
 import utils.EnumHelper;
 
 public class Subtask extends Task {
-    private final Epic parent;
+    private final int parentId;
 
-    public Subtask(String name, String description, TaskStatus taskStatus, Epic parent) {
+    public Subtask(String name, String description, TaskStatus taskStatus, int parentId) {
         super(name, description, taskStatus);
         this.type = TaskType.SUBTASK;
-        this.parent = parent;
+        this.parentId = parentId;
+    }
+    public Subtask(int id, String name, String description, TaskStatus taskStatus, int parentId) {
+        super(id, name, description, taskStatus);
+        this.type = TaskType.SUBTASK;
+        this.parentId = parentId;
     }
 
-    public Epic getParent() {
-        return parent;
+    public int getParentId() {
+        return parentId;
     }
 
     @Override
     public String toString() {
         return "Subtask{" +
                 "id=" + getId() +
-                ", parent.id=" + parent.getId() +
+                ", parent.id=" + parentId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", type='" + EnumHelper.getTypeName(type) + '\'' +
                 ", status='" + EnumHelper.getStatusName(status) + '\'' +
                 '}';
     }
+
 }

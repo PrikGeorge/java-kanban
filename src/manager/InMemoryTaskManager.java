@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
-    private final HistoryManager<Task> historyManager;
+    protected final HistoryManager<Task> historyManager;
     private final Map<Integer, T> taskList;
 
     public InMemoryTaskManager() {
@@ -24,7 +24,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
         taskList.put(task.getId(), task);
 
         if (task instanceof Subtask) {
-            Epic epic = (Epic) taskList.get(((Subtask) task).getParent().getId());
+            Epic epic = (Epic) taskList.get(((Subtask) task).getParentId());
             epic.getSubtasksIds().add(task.getId());
             updateStatus(task.getId());
         }
@@ -91,7 +91,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
                 }
 
             } else if (task instanceof Subtask) {
-                Epic epic = (Epic) taskList.get(((Subtask) task).getParent().getId());
+                Epic epic = (Epic) taskList.get(((Subtask) task).getParentId());
                 epic.getSubtasksIds().remove((Integer) id);
             }
 

@@ -14,15 +14,20 @@ public class Epic extends Task {
         this.type = TaskType.EPIC;
         this.status = TaskStatus.NEW;
     }
+    public Epic(int id, String name, String description) {
+        super(id, name, description);
+        this.type = TaskType.EPIC;
+        this.status = TaskStatus.NEW;
+    }
 
     @Override
     public String toString() {
         return "Epic{" +
                 "id=" + getId() +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", type='" + EnumHelper.getTypeName(type) + '\'' +
-                ", status='" + EnumHelper.getStatusName(status) + '\'' +
+                ", name=" + name +
+                ", description=" + description +
+                ", type=" + EnumHelper.getTypeName(type) +
+                ", status=" + EnumHelper.getStatusName(status) +
                 ", subtasksIds.size()=" + (Objects.nonNull(subtasksIds) ? subtasksIds.size() : 0) +
                 '}';
     }
