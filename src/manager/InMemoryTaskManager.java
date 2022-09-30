@@ -3,15 +3,15 @@ package manager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
-import type.Status;
-import type.Type;
+import type.TaskStatus;
+import utils.EnumHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
-    private final HistoryManager<T> historyManager;
+    private final HistoryManager<Task> historyManager;
     private final Map<Integer, T> taskList;
 
     public InMemoryTaskManager() {
@@ -29,7 +29,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             updateStatus(task.getId());
         }
 
-        System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' добавлен(а).");
+        System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' добавлен(а).");
     }
 
     @Override
@@ -45,6 +45,9 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     @Override
     public void removeTaskList() {
         if (!taskList.isEmpty()) {
+            for(Map.Entry<Integer, T> entry : taskList.entrySet()) {
+                historyManager.remove(entry.getValue().getId());
+            }
             taskList.clear();
         }
 
@@ -70,7 +73,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             taskList.put(task.getId(), task);
             updateStatus(task.getId());
 
-            System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' обновлен(а).");
+            System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' обновлен(а).");
         } else {
             System.out.println("Задача с таким идентификатором не найдена.");
         }
@@ -83,7 +86,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             if (task instanceof Epic && Objects.nonNull(((Epic) task).getSubtasksIds())) {
 
                 List<Integer> subtasksIds = new ArrayList<>(((Epic) task).getSubtasksIds());
-                for (Integer subtaskId : subtasksIds ) {
+                for (Integer subtaskId : subtasksIds) {
                     removeTaskById(subtaskId);
                 }
 
@@ -95,7 +98,7 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             taskList.remove(id);
             historyManager.remove(id);
             updateStatus(task.getId());
-            System.out.println(Type.getTypeName(task.getType()) + " '" + task.getName() + "' удален(а).");
+            System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' удален(а).");
 
         } else {
             System.out.println("Задача с таким идентификатором не найдена.");
@@ -127,22 +130,21 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     private void updateStatus(int epicId) {
         T epic = taskList.get(epicId);
 
-        if (Objects.nonNull(epic)) {
+        if (Objects.nonNull(epic) && epic instanceof Epic) {
+            TaskStatus newTaskStatus = TaskStatus.NEW;
+            List<Subtask> subtasks = getSubtaskByEpicId(epicId);
 
-            Status newStatus = Status.NEW;
-            List<Subtask> subtasks = epic instanceof Epic ? getSubtaskByEpicId(epicId) : new ArrayList<Subtask>(epic);
-
-            if (subtasks.size() > 0) {
-                Map<Status, Long> map = subtasks
+            if (Objects.nonNull(subtasks) && subtasks.size() > 0) {
+                Map<TaskStatus, Long> map = subtasks
                         .stream()
                         .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
 
-                newStatus = map.containsKey(Status.IN_PROGRESS) || map.containsKey(Status.DONE) ?
-                        Status.IN_PROGRESS : map.containsKey(Status.NEW) ?
-                        Status.NEW : Status.DONE;
+                newTaskStatus = map.containsKey(TaskStatus.IN_PROGRESS) || map.containsKey(TaskStatus.DONE) ?
+                        TaskStatus.IN_PROGRESS : map.containsKey(TaskStatus.NEW) ?
+                        TaskStatus.NEW : TaskStatus.DONE;
             }
 
-            epic.setStatus(newStatus);
+            epic.setStatus(newTaskStatus);
         }
     }
 }

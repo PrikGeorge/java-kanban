@@ -1,6 +1,6 @@
 package utils;
 
-// гарантируем сериализацию и одиночность синглтона
+/** гарантируем сериализацию и одиночность синглтона */
 public enum Identifier {
     INSTANCE;
     private int identifier = 0;

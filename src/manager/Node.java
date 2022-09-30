@@ -1,18 +1,15 @@
 package manager;
 
+public class Node<T> {
 
-import model.Task;
-
-public class Node<T extends Task> {
-
-    private final T task;
+    private final T elem;
 
     private Node<T> next;
 
     private Node<T> prev;
 
     public Node(T task) {
-        this.task = task;
+        this.elem = task;
     }
 
     public Node<T> getNext() {
@@ -31,7 +28,7 @@ public class Node<T extends Task> {
         this.prev = prev;
     }
 
-    public T getTask() {
-        return task;
+    public T getElem() {
+        return elem;
     }
 }

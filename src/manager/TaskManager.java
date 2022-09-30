@@ -1,33 +1,31 @@
 package manager;
 
 import model.Subtask;
-import model.Task;
-
 import java.util.List;
 
-public interface TaskManager<T extends Task> {
+public interface TaskManager<T> {
 
-    // получение всех задач
+    /** получение всех задач */
     List<T> getTaskList();
 
-    // удаление всех задач
+    /** удаление всех задач */
     void removeTaskList();
 
-    // получение задачи по идентификатору
+    /** получение задачи по идентификатору */
     T getTaskById(int id);
 
-    // добавление задачи в коллекцию
+    /** добавление задачи в коллекцию */
     void addTask(T task);
 
-    // обновление задачи
+    /** обновление задачи */
     void updateTask(T task);
 
-    // удаление задачи по идентификатору
+    /** удаление задачи по идентификатору */
     void removeTaskById(int id);
 
-    // получение всех подзадач эпика по идентификатору
+    /** получение всех подзадач эпика по идентификатору */
     List<Subtask> getSubtaskByEpicId(int epicId);
 
-    // получение истории просмотров задач
+    /** получение истории просмотров задач */
     List<Integer> history();
 }

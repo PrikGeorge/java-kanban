@@ -84,7 +84,7 @@ public class InMemoryHistoryManager<T extends Task> implements HistoryManager<T>
         if (head != null) {
             Node<T> currentNode = head;
             do {
-                tasks.add(currentNode.getTask());
+                tasks.add(currentNode.getElem());
                 currentNode = currentNode.getNext();
             }
             while (currentNode != null);

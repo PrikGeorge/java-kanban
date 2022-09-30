@@ -8,11 +8,11 @@ public class Managers {
         throw new AssertionError("Невозможно создать экземпляр.");
     }
 
-    public static <T extends Task> TaskManager<T> getDefault() {
+    public static TaskManager<Task> getDefault() {
         return new InMemoryTaskManager<>();
     }
 
-    public static <T extends Task> HistoryManager<T> getDefaultHistory() {
+    public static HistoryManager<Task> getDefaultHistory() {
         return new InMemoryHistoryManager<>();
     }
 }

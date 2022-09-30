@@ -1,7 +1,8 @@
 package model;
 
-import type.Status;
-import type.Type;
+import type.TaskStatus;
+import type.TaskType;
+import utils.EnumHelper;
 import utils.Identifier;
 
 import java.util.Objects;
@@ -13,16 +14,16 @@ public class Task {
 
     protected final String description;
 
-    protected Type type;
+    protected TaskType type;
 
-    protected Status status;
+    protected TaskStatus status;
 
-    public Task(String name, String description, Status status) {
+    public Task(String name, String description, TaskStatus status) {
         id = Identifier.INSTANCE.generate();
         this.name = name;
         this.description = description;
         this.status = status;
-        this.type = Type.TASK;
+        this.type = TaskType.TASK;
     }
 
     public Task(String name, String description) {
@@ -43,16 +44,16 @@ public class Task {
         return description;
     }
 
-    public Type getType() {
+    public TaskType getType() {
         return type;
     }
 
-    public Status getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setStatus(TaskStatus taskStatus) {
+        this.status = taskStatus;
     }
 
     @Override
@@ -61,8 +62,8 @@ public class Task {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", type=" + Type.getTypeName(type) +
-                ", status=" + Status.getStatusName(status) +
+                ", taskType=" + EnumHelper.getTypeName(type) +
+                ", status=" + EnumHelper.getStatusName(status) +
                 '}';
     }
 
