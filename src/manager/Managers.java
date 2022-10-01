@@ -2,8 +2,6 @@ package manager;
 
 import model.Task;
 
-import java.io.File;
-
 public class Managers {
 
     private Managers() {
@@ -18,7 +16,7 @@ public class Managers {
         return new InMemoryHistoryManager<>();
     }
 
-    public static FileBackedTasksManager<Task> getDefaultLoadFile(File file) {
-        return new FileBackedTasksManager<>(file);
+    public static FileBackedTasksManager<Task> getDefaultFile(String filePath) {
+        return new FileBackedTasksManager<>(filePath);
     }
 }
