@@ -13,13 +13,18 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 public class FileBackedTasksManager<T extends Task> extends InMemoryTaskManager<T> {
 
     private final String filePath;
 
-    private static final String csvHeaderText = "id,type,name,status,description,epic_id\n";
+    private static final String csvHeaderText = "id,type,name,status,description,startTime,duration,epic_id\n";
+
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     public FileBackedTasksManager(String filePath) {
         this.filePath = filePath;
@@ -98,10 +103,16 @@ public class FileBackedTasksManager<T extends Task> extends InMemoryTaskManager<
             case EPIC:
                 return new Epic(Integer.parseInt(values[0]), values[2], values[4]);
             case TASK:
-                return new Task(Integer.parseInt(values[0]), values[2], values[4], TaskStatus.valueOf(values[3]));
+                return new Task(Integer.parseInt(values[0]), values[2], values[4],
+                        values[5].isEmpty() ? null : LocalDateTime.parse(values[4], formatter),
+                        values[6].isEmpty() ? null : Integer.valueOf(values[5]),
+                        TaskStatus.valueOf(values[3]));
             case SUBTASK:
-                return new Subtask(Integer.parseInt(values[0]), values[2], values[4], TaskStatus.valueOf(values[3]),
-                        Integer.parseInt(values[5]));
+                return new Subtask(Integer.parseInt(values[0]), values[2], values[4],
+                        values[5].isEmpty() ? null : LocalDateTime.parse(values[4], formatter),
+                        values[6].isEmpty() ? null : Integer.valueOf(values[5]),
+                        TaskStatus.valueOf(values[3]),
+                        Integer.parseInt(values[7]));
             default:
                 return null;
         }
@@ -109,8 +120,12 @@ public class FileBackedTasksManager<T extends Task> extends InMemoryTaskManager<
 
     private String toString(Task task) {
 
+        String startTime = Objects.nonNull(task.getStartTime()) ? formatter.format(task.getStartTime()) : "";
+        String duration = Objects.nonNull(task.getDuration()) ? task.getDuration().toString() : "";
+
         String result = task.getId() + "," + task.getType() + "," +
-                task.getName() + "," + task.getStatus() + "," + task.getDescription();
+                task.getName() + "," + task.getStatus() + "," + task.getDescription() + "," +
+                startTime + "," + duration;
 
         if (task instanceof Subtask) {
             result += "," + ((Subtask) task).getParentId();
@@ -121,6 +136,7 @@ public class FileBackedTasksManager<T extends Task> extends InMemoryTaskManager<
 
     public static FileBackedTasksManager<Task> loadFromFile(String filePath) {
         final FileBackedTasksManager<Task> taskManager = new FileBackedTasksManager<>(filePath);
+
         try {
             String fileContent = Files.readString(Path.of(filePath));
             String[] lines = fileContent.split("\n");

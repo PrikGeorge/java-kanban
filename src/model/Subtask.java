@@ -4,6 +4,8 @@ import type.TaskStatus;
 import type.TaskType;
 import utils.EnumHelper;
 
+import java.time.LocalDateTime;
+
 public class Subtask extends Task {
     private final int parentId;
 
@@ -12,8 +14,15 @@ public class Subtask extends Task {
         this.type = TaskType.SUBTASK;
         this.parentId = parentId;
     }
-    public Subtask(int id, String name, String description, TaskStatus taskStatus, int parentId) {
-        super(id, name, description, taskStatus);
+
+    public Subtask(int id, String name, String description, LocalDateTime startTime, Integer duration, TaskStatus taskStatus, int parentId) {
+        super(id, name, description, startTime, duration, taskStatus);
+        this.type = TaskType.SUBTASK;
+        this.parentId = parentId;
+    }
+
+    public Subtask(String name, String description, LocalDateTime startTime, Integer duration, int parentId) {
+        super(name, description, startTime, duration, TaskStatus.NEW);
         this.type = TaskType.SUBTASK;
         this.parentId = parentId;
     }
@@ -31,6 +40,9 @@ public class Subtask extends Task {
                 ", description='" + description + '\'' +
                 ", type='" + EnumHelper.getTypeName(type) + '\'' +
                 ", status='" + EnumHelper.getStatusName(status) + '\'' +
+                ", duration=" + duration +
+                ", startTime=" + getStartTime() +
+                ", endTime=" + getEndTime() +
                 '}';
     }
 

@@ -6,13 +6,32 @@ import model.Task;
 import type.TaskStatus;
 import utils.EnumHelper;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
     protected final HistoryManager<Task> historyManager;
+
     private final Map<Integer, T> taskList;
+
+    private final Set<T> prioritizedTasks = new TreeSet<T>((elem1, elem2) -> {
+
+        if (elem1.getStartTime() == null && elem2.getStartTime() == null) {
+            return elem1.getId() > elem2.getId() ? 1 : -1;
+
+        } else if (elem1.getStartTime() == null) {
+            return 1;
+
+        } else {
+            if (elem2.getStartTime() != null) {
+                return elem1.getStartTime().compareTo(elem2.getStartTime());
+            } else {
+                return -1;
+            }
+        }
+    });
 
     public InMemoryTaskManager() {
         taskList = new HashMap<>();
@@ -21,12 +40,13 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
     @Override
     public void addTask(T task) {
+        checkTaskIsInFreeInterval(task);
         taskList.put(task.getId(), task);
 
         if (task instanceof Subtask) {
             Epic epic = (Epic) taskList.get(((Subtask) task).getParentId());
             epic.getSubtasksIds().add(task.getId());
-            updateStatus(task.getId());
+            updateStatus(((Subtask) task).getParentId());
         }
 
         System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' добавлен(а).");
@@ -39,13 +59,13 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
         }
 
         System.out.println("Список задач пуст.");
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public void removeTaskList() {
         if (!taskList.isEmpty()) {
-            for(Map.Entry<Integer, T> entry : taskList.entrySet()) {
+            for (Map.Entry<Integer, T> entry : taskList.entrySet()) {
                 historyManager.remove(entry.getValue().getId());
             }
             taskList.clear();
@@ -68,10 +88,14 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
 
     @Override
     public void updateTask(T task) {
+        checkTaskIsInFreeInterval(task);
 
         if (taskList.containsKey(task.getId())) {
             taskList.put(task.getId(), task);
-            updateStatus(task.getId());
+
+            if (task instanceof Subtask) {
+                updateStatus(((Subtask) task).getParentId());
+            }
 
             System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' обновлен(а).");
         } else {
@@ -93,11 +117,12 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             } else if (task instanceof Subtask) {
                 Epic epic = (Epic) taskList.get(((Subtask) task).getParentId());
                 epic.getSubtasksIds().remove((Integer) id);
+                updateStatus(epic.getId());
             }
 
             taskList.remove(id);
             historyManager.remove(id);
-            updateStatus(task.getId());
+
             System.out.println(EnumHelper.getTypeName(task.getType()) + " '" + task.getName() + "' удален(а).");
 
         } else {
@@ -128,23 +153,74 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
     }
 
     private void updateStatus(int epicId) {
-        T epic = taskList.get(epicId);
+        T task = taskList.get(epicId);
 
-        if (Objects.nonNull(epic) && epic instanceof Epic) {
+        if (Objects.nonNull(task) && task instanceof Epic) {
+            Epic epic = (Epic) task;
             TaskStatus newTaskStatus = TaskStatus.NEW;
             List<Subtask> subtasks = getSubtaskByEpicId(epicId);
+
+            int duration = 0;
+            LocalDateTime firstDate = null;
+            LocalDateTime lastDate = null;
 
             if (Objects.nonNull(subtasks) && subtasks.size() > 0) {
                 Map<TaskStatus, Long> map = subtasks
                         .stream()
                         .collect(Collectors.groupingBy(Task::getStatus, Collectors.counting()));
 
-                newTaskStatus = map.containsKey(TaskStatus.IN_PROGRESS) || map.containsKey(TaskStatus.DONE) ?
+                newTaskStatus = map.containsKey(TaskStatus.IN_PROGRESS) || (map.containsKey(TaskStatus.NEW) && map.containsKey(TaskStatus.DONE)) ?
                         TaskStatus.IN_PROGRESS : map.containsKey(TaskStatus.NEW) ?
                         TaskStatus.NEW : TaskStatus.DONE;
+
+                for (Subtask subtask : subtasks) {
+                    if (Objects.nonNull(subtask.getStartTime()) && Objects.nonNull(subtask.getDuration())) {
+
+                        if (Objects.isNull(lastDate)) {
+                            lastDate = subtask.getEndTime();
+                        }
+                        if (Objects.isNull(firstDate)) {
+                            firstDate = subtask.getStartTime();
+                        }
+
+                        if (subtask.getEndTime().isAfter(lastDate)) {
+                            lastDate = subtask.getEndTime();
+                        }
+                        if (subtask.getStartTime().isBefore(firstDate)) {
+                            firstDate = subtask.getStartTime();
+                        }
+
+                        duration += subtask.getDuration();
+                    }
+                }
             }
 
+            epic.setStartTime(firstDate);
+            epic.setEndTime(lastDate);
+            epic.setDuration(duration);
+
             epic.setStatus(newTaskStatus);
+        }
+    }
+
+    public Set<T> getPrioritizedTasks() {
+        return prioritizedTasks;
+    }
+
+    private void checkTaskIsInFreeInterval(T task) {
+        if (task.getStartTime() == null) {
+            return;
+        }
+
+        for (Task savedTask : getPrioritizedTasks()) {
+
+            if (savedTask.getStartTime() != null &&
+                    ((savedTask.getStartTime().isBefore(task.getStartTime()) && savedTask.getEndTime().isAfter(task.getStartTime()))
+                            ||
+                            savedTask.getStartTime().isBefore(task.getEndTime()) && savedTask.getEndTime().isAfter(task.getEndTime()))) {
+
+                throw new IllegalArgumentException("Дата задачи пересекается с датой задачи " + savedTask.getName());
+            }
         }
     }
 }
