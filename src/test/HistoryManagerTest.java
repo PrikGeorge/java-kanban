@@ -22,6 +22,11 @@ public class HistoryManagerTest {
     }
 
     @Test
+    void getEmptyHistory() {
+        assertEquals(historyManager.getHistory().size(), 0, "История не пустая.");
+    }
+
+    @Test
     void add() {
         Epic epic = new Epic("Epic 1", "Description 1");
         Task task = new Task("Task 2", "Description 2");
@@ -75,6 +80,29 @@ public class HistoryManagerTest {
 
         historyManager.remove(epic.getId());
         assertFalse(historyManager.getHistory().contains(epic), "Задача не удалена");
+    }
+
+
+    @Test
+    void getDuplicateTasksHistory() {
+        Epic epic = new Epic("Epic 1", "Description");
+        Task task = new Task("Task 2", "Description");
+        Subtask subtask = new Subtask("Subtask 3", "Description", TaskStatus.NEW, epic.getId());
+
+        historyManager.add(epic);
+        historyManager.add(task);
+        historyManager.add(subtask);
+        historyManager.add(task);
+        historyManager.add(task);
+        historyManager.add(task);
+        historyManager.add(task);
+        historyManager.add(subtask);
+
+        assertEquals(historyManager.getHistory().size(), 3, "Некорректное кол-во элементов.");
+
+        assertEquals(historyManager.getHistory().get(0), epic, "Задача не найдена");
+        assertEquals(historyManager.getHistory().get(1), task, "Задача не найдена");
+        assertEquals(historyManager.getHistory().get(2), subtask, "Задача не найдена");
     }
 
 }

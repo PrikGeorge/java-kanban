@@ -212,12 +212,16 @@ public class InMemoryTaskManager<T extends Task> implements TaskManager<T> {
             return;
         }
 
-        for (Task savedTask : getPrioritizedTasks()) {
+        Set<T> prioritizedTasks = getPrioritizedTasks();
+        for (Task savedTask : prioritizedTasks) {
 
-            if (savedTask.getStartTime() != null &&
-                    ((savedTask.getStartTime().isBefore(task.getStartTime()) && savedTask.getEndTime().isAfter(task.getStartTime()))
-                            ||
-                            savedTask.getStartTime().isBefore(task.getEndTime()) && savedTask.getEndTime().isAfter(task.getEndTime()))) {
+            boolean startTimeBeforeSavedTask = savedTask.getStartTime().isBefore(task.getStartTime());
+            boolean startTimeAfterSavedTask = savedTask.getEndTime().isAfter(task.getStartTime());
+            boolean endTimeBeforeSavedTask = savedTask.getStartTime().isBefore(task.getEndTime());
+            boolean endTimeAfterSavedTask = savedTask.getEndTime().isAfter(task.getEndTime());
+
+            if (Objects.nonNull(savedTask.getStartTime()) && ((startTimeBeforeSavedTask && startTimeAfterSavedTask)
+                    || endTimeBeforeSavedTask && endTimeAfterSavedTask)) {
 
                 throw new IllegalArgumentException("Дата задачи пересекается с датой задачи " + savedTask.getName());
             }

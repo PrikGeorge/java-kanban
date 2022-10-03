@@ -47,5 +47,8 @@ public interface TaskManager<T> {
      */
     List<Integer> history();
 
+    /**
+     * получение список задач и подзадач в заданном порядке
+     */
     Set<T> getPrioritizedTasks();
 }

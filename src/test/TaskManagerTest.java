@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -188,7 +189,7 @@ abstract class TaskManagerTest {
         taskManager.addTask(task3);
 
         List<Integer> tasks = taskManager.getTaskList().stream()
-                .filter(task -> task instanceof Task)
+                .filter(Objects::nonNull)
                 .map(Task::getId)
                 .collect(Collectors.toList());
 
@@ -238,7 +239,6 @@ abstract class TaskManagerTest {
     @Test
     void getSubtaskById() {
         Epic epic = new Epic("Epic 1", "Description 1");
-
         Subtask subtask = new Subtask("Subtask 1", "Description 1", NEW, epic.getId());
 
         taskManager.addTask(epic);
@@ -266,7 +266,6 @@ abstract class TaskManagerTest {
     @Test
     void getSubtasksByEpicId() {
         Epic epic = new Epic("Epic 1", "Description 1");
-
         Subtask subtask = new Subtask("Subtask 1", "Description 1", NEW, epic.getId());
 
         taskManager.addTask(epic);
@@ -371,8 +370,6 @@ abstract class TaskManagerTest {
 
     @Test
     void getHistory() {
-
-
         Epic epic = new Epic("Epic 1", "Description 1");
         Task task = new Task("Task 2", "Description 1");
         Subtask subtask = new Subtask("Subtask 3", "Description 1", NEW, epic.getId());
