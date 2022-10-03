@@ -19,8 +19,6 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
 
     private final String fileName = "test.txt";
 
-    protected FileBackedTasksManager<Task> fileManager;
-
     @BeforeEach
     public void createManager() {
         HistoryManager<Task> historyManager = Managers.getDefaultHistory();
@@ -30,7 +28,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
             historyManager.remove(task.getId());
         }
 
-        fileManager = new FileBackedTasksManager<Task>(fileName);
+        taskManager = new FileBackedTasksManager<Task>(fileName);
     }
 
     @AfterEach
@@ -42,8 +40,8 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
     public void saveEmptyTasksList() {
         Task task = new Task("Task 1", "Description");
 
-        fileManager.addTask(task);
-        fileManager.removeTaskById(task.getId());
+        taskManager.addTask(task);
+        taskManager.removeTaskById(task.getId());
 
         assertNotNull(FileBackedTasksManager.loadFromFile(fileName).getTaskList(), "Список задач не найден");
         assertEquals(FileBackedTasksManager.loadFromFile(fileName).getTaskList().size(), 0, "Список задач не пуст");
@@ -52,7 +50,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
     @Test
     public void saveWithEpic() {
         Epic epic = new Epic("Epic 1", "Description");
-        fileManager.addTask(epic);
+        taskManager.addTask(epic);
 
         Epic loadedEpic = (Epic) FileBackedTasksManager.loadFromFile(fileName).getTaskById(epic.getId());
         assertNotNull(loadedEpic, "Эпик не найден");
@@ -63,8 +61,8 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
     public void saveEmptyHistoryList() {
         Task task = new Task("Task 1", "Description");
 
-        fileManager.addTask(task);
-        fileManager.removeTaskById(task.getId());
+        taskManager.addTask(task);
+        taskManager.removeTaskById(task.getId());
 
         assertNotNull(FileBackedTasksManager.loadFromFile(fileName).history(), "История не найдена");
         assertEquals(FileBackedTasksManager.loadFromFile(fileName).history().size(), 0, "Список задач не пуст");
