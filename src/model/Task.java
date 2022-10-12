@@ -11,7 +11,7 @@ import java.util.Objects;
 public class Task {
     private final int id;
 
-    protected final String name;
+    protected String name;
 
     protected final String description;
 
@@ -75,9 +75,6 @@ public class Task {
         return id;
     }
 
-    public String getName() {
-        return name;
-    }
 
     public String getDescription() {
         return description;
@@ -144,5 +141,13 @@ public class Task {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

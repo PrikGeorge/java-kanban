@@ -68,7 +68,7 @@ public class FileBackedTasksManager<T extends Task> extends InMemoryTaskManager<
         return subtasks;
     }
 
-    private void save() {
+    protected void save() {
 
         try (Writer fileWriter = new FileWriter(filePath, StandardCharsets.UTF_8)) {
 

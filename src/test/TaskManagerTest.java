@@ -5,9 +5,12 @@ import manager.TaskManager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.KVServer;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -20,11 +23,21 @@ import static type.TaskStatus.*;
 abstract class TaskManagerTest {
 
     protected final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
     protected TaskManager<Task> taskManager;
 
+    KVServer server;
+
     @BeforeEach
-    public void createManager() {
+    public void createManager() throws IOException {
+        server = new KVServer();
+        server.start();
         taskManager = Managers.getDefault();
+    }
+
+    @AfterEach
+    public void destroy() {
+        server.stop();
     }
 
     @Test
@@ -334,7 +347,7 @@ abstract class TaskManagerTest {
         assertEquals(taskManager.getTaskList().stream().filter(t -> t instanceof Epic).count(), 0, "Список не пустой");
 
         taskManager.removeTaskById(task.getId());
-        assertEquals(taskManager.getTaskList().stream().filter(t -> t instanceof Task).count(), 0, "Список не пустой");
+        assertEquals(taskManager.getTaskList().stream().filter(Objects::nonNull).count(), 0, "Список не пустой");
     }
 
     @Test
