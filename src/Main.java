@@ -4,19 +4,16 @@ import manager.TaskManager;
 import model.Epic;
 import model.Subtask;
 import model.Task;
-import server.KVServer;
 import type.TaskStatus;
-
-import java.io.IOException;
 
 public class Main {
 
     private static TaskManager<Task> inMemoryTaskManager;
 
-    public static void main(String[] args) throws IOException {
-        new KVServer().start();
+    public static void main(String[] args) {
+        Managers.getDefaultKVServer().start();
 
-        inMemoryTaskManager =  Managers.getDefault();
+        inMemoryTaskManager = Managers.getDefault();
         testActionsByFileBackedTasksManager();
         testActionsByInMemoryTaskManager();
     }

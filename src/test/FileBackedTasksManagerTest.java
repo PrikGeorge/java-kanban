@@ -8,10 +8,8 @@ import model.Task;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.KVServer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,14 +20,13 @@ public class FileBackedTasksManagerTest extends TaskManagerTest {
     private final String fileName = "test.txt";
 
     @BeforeEach
-    public void createManager() throws IOException {
-        server = new KVServer();
-        server.start();
-        taskManager = new FileBackedTasksManager<Task>(fileName);
+    public void create() {
+        taskManager = new FileBackedTasksManager<>(fileName);
+        taskManager.removeTaskList();
 
         HistoryManager<Task> historyManager = Managers.getDefaultHistory();
         List<Task> historyTasks = List.copyOf(historyManager.getHistory());
-        taskManager.removeTaskList();
+
         for (Task task : historyTasks) {
             historyManager.remove(task.getId());
         }

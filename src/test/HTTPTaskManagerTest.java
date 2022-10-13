@@ -15,14 +15,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class HTTPTaskManagerTest extends TaskManagerTest {
 
-    private HTTPTaskManager<Task> manager;
-
     @BeforeEach
     public void create() {
         HistoryManager<Task> historyManager = Managers.getDefaultHistory();
         List<Task> historyTasks = List.copyOf(historyManager.getHistory());
-        manager = (HTTPTaskManager<Task>) Managers.getDefault();
-        manager.removeTaskList();
+
+        taskManager = Managers.getDefault();
+        taskManager.removeTaskList();
+
         for (Task task : historyTasks) {
             historyManager.remove(task.getId());
         }
@@ -31,8 +31,8 @@ public class HTTPTaskManagerTest extends TaskManagerTest {
     @Test
     public void saveEmptyTasksList() {
         Task task = new Task("Task", "Description");
-        manager.addTask(task);
-        manager.removeTaskById(task.getId());
+        taskManager.addTask(task);
+        taskManager.removeTaskById(task.getId());
 
         HTTPTaskManager<Task> loadManager = new HTTPTaskManager<>("localhost");
         assertNotNull(loadManager.getTaskList(), "Список задач не найден");
@@ -42,7 +42,7 @@ public class HTTPTaskManagerTest extends TaskManagerTest {
     @Test
     public void saveWithEpic() {
         Epic epic = new Epic("Epic", "Description");
-        manager.addTask(epic);
+        taskManager.addTask(epic);
 
         HTTPTaskManager<Task> loadManager = (HTTPTaskManager<Task>) Managers.getDefault();
         Epic loadedEpic = (Epic) loadManager.getTaskById(epic.getId());
@@ -54,8 +54,8 @@ public class HTTPTaskManagerTest extends TaskManagerTest {
     @Test
     public void saveEmptyHistoryList() {
         Task task = new Task("Task", "Description");
-        manager.addTask(task);
-        manager.removeTaskById(task.getId());
+        taskManager.addTask(task);
+        taskManager.removeTaskById(task.getId());
 
         HTTPTaskManager<Task> loadManager = new HTTPTaskManager<>("localhost");
         assertNotNull(loadManager.history(), "История не найдена");
